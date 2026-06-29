@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:field_star_technician_app/model/assignedjob_model.dart';
 import 'package:field_star_technician_app/model/customer_model.dart';
 import 'package:field_star_technician_app/model/raiseComplaint_model.dart';
 import 'package:field_star_technician_app/pages/Assign_Jobs/inspection_page.dart';
 import 'package:field_star_technician_app/service/database_operation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -22,11 +25,13 @@ class Jobdetails extends StatefulWidget {
 }
 
 class _JobdetailsState extends State<Jobdetails> {
+  
   AssignedjobModel? _techDetails;
   final database = DatabaseOpration();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
@@ -136,28 +141,49 @@ class _JobdetailsState extends State<Jobdetails> {
             ),
             //===========================Call And message button===================================
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      _makeCall(_techDetails?.phoneNo ?? '-');
-                    },
-                    icon: const Icon(Icons.call),
-                    label: const Text("Call Customer"),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      _sendSms(_techDetails?.phoneNo ?? '-');
-                    },
-                    icon: const Icon(Icons.message),
-                    label: const Text("SMS"),
-                  ),
-                ),
-              ],
+            FutureBuilder<CustomerModel?>(
+              future: database.fetchCustomerByTicketId(widget.complaint.id),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const SizedBox();
+
+                final customer = snapshot.data!;
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _makeCall(customer.phone),
+                        icon: const Icon(Icons.call),
+                        label: const Text("Call Customer"),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _sendSms(customer.phone),
+                        icon: const Icon(Icons.message),
+                        label: const Text("SendSms"),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                     Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _sendOTP(customer.phone),
+                        icon: const Icon(Icons.chat_bubble_outline,color: Colors.white,),
+                        label: const Text("Send OTP",style: TextStyle(color: Colors.white),),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          
+                        ),
+                        
+                        
+                      )
+                      
+                    ),
+                  ],
+                );
+              },
             ),
             const Divider(height: 30),
 
@@ -469,13 +495,69 @@ class _JobdetailsState extends State<Jobdetails> {
 
   //=======================Send message=================================
   Future<void> _sendSms(String phone) async {
-    final Uri uri = Uri(scheme: 'sms', path: phone);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
+    try {
+      final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+
+      if (cleanPhone.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Phone number not found')));
+        return;
+      }
+
+      final Uri uri = kIsWeb
+          ? Uri.parse('https://wa.me/91$cleanPhone')
+          : Uri(scheme: 'sms', path: cleanPhone);
+
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open message app')),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not open SMS app')));
+      ).showSnackBar(SnackBar(content: Text('Could not open message app: $e')));
     }
+  }
+   //=======================Send message=================================
+ Future<void> _sendOTP(String phone) async {
+  try {
+    final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+
+    final otp = generateOtp();
+
+    final message = Uri.encodeComponent(
+      'Hello,\n\nYour Field Star verification OTP is: $otp\n\nDo not share this OTP with anyone.',
+    );
+
+    final whatsappUrl = Uri.parse(
+      'https://wa.me/91$cleanPhone?text=$message',
+    );
+
+    await launchUrl(
+      whatsappUrl,
+      mode: LaunchMode.externalApplication,
+    );
+
+    print('Generated OTP: $otp');
+
+    // Save OTP to database if needed
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to open WhatsApp: $e')),
+    );
+  }
+}
+
+//====================================Generate OTP==================================
+  String generateOtp() {
+    final random = Random();
+    return (1000 + random.nextInt(9000)).toString();
   }
 }
