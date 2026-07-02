@@ -222,9 +222,18 @@ class _JobdetailsState extends State<Jobdetails> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  _launchGoogleMaps();
-                },
+                onPressed: () async {
+  final customer = await database.fetchCustomerByTicketId(widget.complaint.id);
+  
+  // Ensure the address field isn't empty before launching
+  if (customer != null && customer.location != null) {
+    await _launchGoogleMaps(customer.location!);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Customer address not found.')),
+    );
+  }
+},
                 icon: const Icon(Icons.navigation),
                 label: const Text("Get Directions"),
               ),
@@ -464,8 +473,10 @@ class _JobdetailsState extends State<Jobdetails> {
   }
 
   //========================Google Map=======================================
-  Future<void> _launchGoogleMaps() async {
-    const String address = "1600 Amphitheatre Pkwy, Mountain View, CA";
+  Future<void> _launchGoogleMaps(String address) async {
+    if (address.isEmpty) {
+      throw Exception('Address is empty');
+    }
 
     final Uri googleMapsUrl = Uri.parse(
       "https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}",

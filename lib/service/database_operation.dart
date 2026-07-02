@@ -511,4 +511,16 @@ Future<List<Map<String, dynamic>>> fetchCategoryJobCounts() async {
     });
 
   }
+  //===========================Fetch customer Address by ticket id=========================
+ // Example implementation logic
+Future<CustomerModel?> fetchCustomeraddressByTicketId(String ticketId) async {
+  final response = await supabase
+      .from('customer')
+      .select('cust_location') // Ensure you are selecting the location
+      .eq('id', ticketId)
+      .maybeSingle();
+
+  if (response == null) return null;
+  return CustomerModel.fromMap(response);
+}
 }

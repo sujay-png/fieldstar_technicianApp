@@ -20,10 +20,7 @@ class _LoginScreenState extends State<LoginScreen>
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
- 
-  // Brand colors
-  static const _teal = Color(0xFF00C896);
-  static const _tealLight = Color(0xFFE0FAF3);
+
   static const _cardBg = Color(0xFFFFFFFF);
   static const _textDark = Color(0xFF1A2332);
   static const _textMuted = Color(0xFF8A97A8);
