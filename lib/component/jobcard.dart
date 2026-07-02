@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class JobCard extends StatelessWidget {
-  final String id, title, type, issue, location, distance, priority, status;
+  final String id, title, type, issue, location, distance, priority, status,servicetype;
   final Color priorityColor;
   final VoidCallback onTap;
 
@@ -17,6 +17,7 @@ class JobCard extends StatelessWidget {
     required this.priority,
     required this.priorityColor,
     required this.onTap, // 2. Add to constructor
+    required this.servicetype,
   });
 
   @override
@@ -37,6 +38,8 @@ class JobCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                
                 children: [
                   Text(id, style: const TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(width: 8),
@@ -51,6 +54,24 @@ class JobCard extends StatelessWidget {
                     ),
                     child: Text(
                       priority,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: priorityColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                   Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: priorityColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                     'Service: $servicetype',
                       style: TextStyle(
                         fontSize: 12,
                         color: priorityColor,

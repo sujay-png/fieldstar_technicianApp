@@ -25,7 +25,6 @@ class Jobdetails extends StatefulWidget {
 }
 
 class _JobdetailsState extends State<Jobdetails> {
-  
   AssignedjobModel? _techDetails;
   final database = DatabaseOpration();
   @override
@@ -167,19 +166,21 @@ class _JobdetailsState extends State<Jobdetails> {
                     ),
                     const SizedBox(width: 10),
 
-                     Expanded(
+                    Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _sendOTP(customer.phone),
-                        icon: const Icon(Icons.chat_bubble_outline,color: Colors.white,),
-                        label: const Text("Send OTP",style: TextStyle(color: Colors.white),),
+                        icon: const Icon(
+                          Icons.chat_bubble_outline,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          "Send OTP",
+                          style: TextStyle(color: Colors.white),
+                        ),
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.green,
-                          
                         ),
-                        
-                        
-                      )
-                      
+                      ),
                     ),
                   ],
                 );
@@ -223,17 +224,21 @@ class _JobdetailsState extends State<Jobdetails> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () async {
-  final customer = await database.fetchCustomerByTicketId(widget.complaint.id);
-  
-  // Ensure the address field isn't empty before launching
-  if (customer != null && customer.location != null) {
-    await _launchGoogleMaps(customer.location!);
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Customer address not found.')),
-    );
-  }
-},
+                  final customer = await database.fetchCustomerByTicketId(
+                    widget.complaint.id,
+                  );
+
+                  // Ensure the address field isn't empty before launching
+                  if (customer != null && customer.location != null) {
+                    await _launchGoogleMaps(customer.location!);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Customer address not found.'),
+                      ),
+                    );
+                  }
+                },
                 icon: const Icon(Icons.navigation),
                 label: const Text("Get Directions"),
               ),
@@ -536,37 +541,35 @@ class _JobdetailsState extends State<Jobdetails> {
       ).showSnackBar(SnackBar(content: Text('Could not open message app: $e')));
     }
   }
-   //=======================Send message=================================
- Future<void> _sendOTP(String phone) async {
-  try {
-    final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
 
-    final otp = generateOtp();
+  //=======================Send message=================================
+  Future<void> _sendOTP(String phone) async {
+    try {
+      final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
 
-    final message = Uri.encodeComponent(
-      'Hello,\n\nYour Field Star verification OTP is: $otp\n\nDo not share this OTP with anyone.',
-    );
+      final otp = generateOtp();
 
-    final whatsappUrl = Uri.parse(
-      'https://wa.me/91$cleanPhone?text=$message',
-    );
+      final message = Uri.encodeComponent(
+        'Hello,\n\nYour Field Star verification OTP is: $otp\n\nDo not share this OTP with anyone.',
+      );
 
-    await launchUrl(
-      whatsappUrl,
-      mode: LaunchMode.externalApplication,
-    );
+      final whatsappUrl = Uri.parse(
+        'https://wa.me/91$cleanPhone?text=$message',
+      );
 
-    print('Generated OTP: $otp');
+      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
 
-    // Save OTP to database if needed
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to open WhatsApp: $e')),
-    );
+      print('Generated OTP: $otp');
+
+      // Save OTP to database if needed
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to open WhatsApp: $e')));
+    }
   }
-}
 
-//====================================Generate OTP==================================
+  //====================================Generate OTP==================================
   String generateOtp() {
     final random = Random();
     return (1000 + random.nextInt(9000)).toString();

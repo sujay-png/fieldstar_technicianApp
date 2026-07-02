@@ -14,6 +14,7 @@ class RaiseComplaintModel {
   final AssignedjobModel? technician;
   final String? customerId; 
   final String technicianName;
+  final String serviceType; // ← added for service type
   RaiseComplaintModel({
     this.dbId,                // ← optional
     required this.id,
@@ -25,7 +26,7 @@ class RaiseComplaintModel {
     required this.priority,
     required this.status,
     required this.techStatus,
-    this.technician, required this.technicianName, this.customerId,
+    this.technician, required this.technicianName, this.customerId, required this.serviceType,
     
   });
 
@@ -47,7 +48,8 @@ class RaiseComplaintModel {
        customerId: map['customer_id']?.toString(),
       technician: techMap != null
           ? AssignedjobModel.fromMap(techMap)
-          : null,
+          : null, 
+        serviceType: '${map['Service_type'] ?? 'N/A'}', // ← added for service type
     );
   }
 }

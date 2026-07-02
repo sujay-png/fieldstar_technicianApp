@@ -99,12 +99,7 @@ class _AssignJobsState extends State<AssignJobs> {
 //=========================Job completed status card======================================
                         Row(
                           children: [
-                            _buildStatCard(
-                              stats['jobsToday'].toString(),
-                              'Jobs Today',
-                              Colors.orange.shade100,
-                              Icons.build,
-                            ),
+                           
                             const SizedBox(width: 10),
                             _buildStatCard(
                               stats['completed'].toString(),
@@ -195,6 +190,7 @@ class _AssignJobsState extends State<AssignJobs> {
                       status: complaint.status,                    
                       priority: complaint.priority,
                       priorityColor: priorityColor,
+                      servicetype: complaint.serviceType,
                       onTap: () {
                         context.go('/jobdetails', extra: complaint);
                       },

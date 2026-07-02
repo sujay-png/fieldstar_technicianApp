@@ -16,26 +16,31 @@ class DatabaseOpration {
   }
 
   //=============Fetch Assigned jobs ==============================
-  Future<List<RaiseComplaintModel>> fetchComplaints() async {
-    try {
-      final authUser = supabase.auth.currentUser;
-      if (authUser == null) throw Exception('Not logged in');
-      final techResponse = await supabase
-          .from('technician')
-          .select('id')
-          .eq('user_id', authUser.id)
-          .maybeSingle();
+ Future<List<RaiseComplaintModel>> fetchComplaints() async {
+  try {
+    final authUser = supabase.auth.currentUser;
+    if (authUser == null) throw Exception('Not logged in');
 
-      if (techResponse == null) {
-        throw Exception('No technician profile found for this account');
-      }
+    final techResponse = await supabase
+        .from('technician')
+        .select('id')
+        .eq('user_id', authUser.id)
+        .maybeSingle();
 
-      final technicianId = techResponse['id'];
+    if (techResponse == null) {
+      throw Exception('No technician profile found for this account');
+    }
 
-      final response = await supabase
-          .from('Raise_complaint')
-          .select('''
+    final technicianId = techResponse['id'];
+    final response = await supabase
+        .from('Raise_complaint')
+        .select('''
           *,
+          complaint_technicians!inner (
+            technician_id,
+            technician_name,
+            assigned_at
+          ),
           technician (
             id,
             "TechID",
@@ -46,16 +51,16 @@ class DatabaseOpration {
             techstatus
           )
         ''')
-          .eq('technician_id', technicianId)
-       .order('created_at', ascending: false);
+        .eq('complaint_technicians.technician_id', technicianId)
+        .order('created_at', ascending: false);
 
-      return (response as List)
-          .map((item) => RaiseComplaintModel.fromMap(item))
-          .toList();
-    } catch (e) {
-      throw Exception('Failed to fetch: $e');
-    }
+    return (response as List)
+        .map((item) => RaiseComplaintModel.fromMap(item))
+        .toList();
+  } catch (e) {
+    throw Exception('Failed to fetch: $e');
   }
+}
 
   //========================Fetch Customer============================
  Future<CustomerModel?> fetchCustomerByTicketId(String ticketId) async {
