@@ -49,13 +49,18 @@ class _SignUpScreenState extends State<SignUpScreen>
     _animController.forward();
   }
 
-  @override
-  void dispose() {
-    _animController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+ @override
+void dispose() {
+  _animController.dispose();
+  _emailController.dispose();
+  _passwordController.dispose();
+  _nameController.dispose();
+  _techIdController.dispose();
+  _phoneController.dispose();
+  _locationController.dispose();
+  _specializationController.dispose();
+  super.dispose();
+}
 
   void _showSnack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -69,42 +74,47 @@ class _SignUpScreenState extends State<SignUpScreen>
   }
 
   void _handleSignUp() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      _showSnack('Please fill in all fields');
-      return;
-    }
+  if (email.isEmpty || password.isEmpty) {
+    _showSnack('Please fill in all fields');
+    return;
+  }
 
-    if (password.length < 6) {
-      _showSnack('Password must be at least 6 characters');
-      return;
-    }
+  if (password.length < 6) {
+    _showSnack('Password must be at least 6 characters');
+    return;
+  }
 
-    setState(() => _isLoading = true);
+  setState(() => _isLoading = true);
 
-    try {
-      await database.registerTechnicianWithAuth(
-        fullName: _nameController.text.trim(),
-        techId: _techIdController.text.trim(),
-        phone: _phoneController.text.trim(),
-        location: _locationController.text.trim(),
-        specialization: _specializationController.text.trim(),
-        email: email,
-        password: password,
-      );
+  try {
+    await database.registerTechnicianWithAuth(
+      fullName: _nameController.text.trim(),
+      techId: _techIdController.text.trim(),
+      phone: _phoneController.text.trim(),
+      location: _locationController.text.trim(),
+      specialization: _specializationController.text.trim(),
+      email: email,
+      password: password,
+    );
 
-      _showSnack('Technician registered successfully');
-      context.go('/Home');
-    } on AuthException catch (e) {
-      _showSnack(e.message);
-    } catch (e) {
-      _showSnack(e.toString());
-    } finally {
+    if (!mounted) return;        
+    _showSnack('Technician registered successfully');
+    context.go('/Home');
+  } on AuthException catch (e) {
+    if (!mounted) return;          
+    _showSnack(e.message);
+  } catch (e) {
+    if (!mounted) return;        
+    _showSnack(e.toString());
+  } finally {
+    if (mounted) {                
       setState(() => _isLoading = false);
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -450,7 +460,7 @@ class _SignUpScreenState extends State<SignUpScreen>
         ),
         GestureDetector(
           onTap: () {
-            context.go('/login');
+            context.push('/login');
           },
           child: const Text(
             'Sign In',
@@ -464,4 +474,5 @@ class _SignUpScreenState extends State<SignUpScreen>
       ],
     );
   }
-}
+    }
+ 
